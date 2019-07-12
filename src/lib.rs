@@ -9,6 +9,99 @@ use std::cmp::Ordering;
 
 const MAX_ATTEMPTS: u32 = 8;
 
+fn ralph() -> El<Msg> {
+	div![
+		id! {"ralph-wiggum"},
+		div![
+			class!["head"],
+			div![class!["body", "head1"]],
+			div![class!["no-border", "body", "head2"]],
+			div![class!["hair", "hair-left", "hair1"]],
+			div![class!["hair", "hair-left", "hair2"]],
+			div![class!["hair", "hair-left", "hair3"]],
+			div![class!["hair", "hair-left", "hair4"]],
+			div![class!["hair", "hair-left", "hair5"]],
+			div![class!["hair", "hair-left", "hair6"]],
+			div![class!["hair", "hair-left", "hair7"]],
+			div![class!["hair", "hair-right", "hair8"]],
+			div![class!["hair", "hair-right", "hair9"]],
+			div![class!["hair", "hair-right", "hair10"]],
+			div![class!["hair", "hair-right", "hair11"]],
+			div![class!["hair", "hair-right", "hair12"]],
+			div![
+				class!["body", "ear"],
+				div![class!["inner1"]],
+				div![class!["inner2"]],
+				div![class!["no-border", "body", "clip"]]
+			],
+			div![class!["no-border", "body", "mouth5"]],
+			div![class!["body", "mouth1"]],
+			div![class!["no-border", "body", "mouth2"]],
+			div![class!["no-border", "body", "mouth3"]],
+			div![class!["no-border", "body", "mouth4"]],
+			div![
+				class!["left-eye", "eye"],
+				div![class!["no-border", "pupil"]]
+			],
+			div![
+				class!["right-eye", "eye"],
+				div![class!["no-border", "pupil"]]
+			],
+			div![class!["body", "nose"]]
+		]
+	]
+}
+
+fn homer() -> El<Msg> {
+	div![
+		id! {"homer"},
+		div![
+			class!["head"],
+			div![class!["hair1"]],
+			div![class!["hair2"]],
+			div![class!["body", "head-top"]],
+			div![class!["no-border", "body", "head-main"]],
+			div![class!["no-border", "m1"]],
+			div![class!["no-border", "m2"]],
+			div![class!["no-border", "m3"]],
+			div![class!["no-border", "m4"]],
+			div![class!["no-border", "neck1"]],
+			div![class!["body", "neck2"]],
+			div![
+				class!["body", "ear"],
+				div![class!["no-border", "inner1"]],
+				div![class!["no-border", "inner2"]],
+				div![class!["no-border", "body", "clip"]]
+			],
+			div![
+				class!["mouth"],
+				div![class!["mouth5"]],
+				div![class!["mouth2"]],
+				div![class!["mouth1"]],
+				div![class!["mouth7"]],
+				div![class!["no-border", "mouth3"]],
+				div![class!["no-border", "mouth4"]],
+				div![class!["no-border", "mouth6"]],
+				div![class!["no-border", "mouth8"]]
+			],
+			div![
+				class!["right-eye"],
+				div![class!["no-border", "right-eye-pupil"]],
+				div![class!["no-border", "body", "eyelid-top"]],
+				div![class!["no-border", "body", "eyelid-bottom"]]
+			],
+			div![class!["body", "nose"]],
+			div![class!["body", "nose-tip"]],
+			div![
+				class!["left-eye"],
+				div![class!["no-border", "left-eye-pupil"]],
+				div![class!["no-border", "body", "eyelid-top"]],
+				div![class!["no-border", "body", "eyelid-bottom"]]
+			]
+		]
+	]
+}
+
 #[derive(Default)]
 struct Model {
 	secret_number: u32,
@@ -65,25 +158,34 @@ fn update(msg: Msg, model: &mut Model, _: &mut Orders<Msg>) {
 		Msg::StartNewGame => *model = Model::default().randomize(),
 	}
 }
-
 // View
 
 fn view(model: &Model) -> El<Msg> {
 	div![
-		div![format!("Your guess: {}", model.guess)],
-		div![format!("Info: {}", model.msg)],
-		div![format!("Attempts left: {}", MAX_ATTEMPTS - model.attempts)],
+		class! {"game-board"},
+		homer(),
+		h2![format!("Your guess: {}", model.guess)],
+		h2![format!("Info: {}", model.msg)],
+		h2![format!("Attempts left: {}", MAX_ATTEMPTS - model.attempts)],
 		if !model.game_finished {
-			div![
+			vec![
 				input![
 					attrs! {At::Value => model.guess},
 					input_ev(Ev::Input, Msg::ChangeGuess)
 				],
-				button![simple_ev(Ev::Click, Msg::SubmitGuess), "Submit your guess"]
+				button![
+					simple_ev(Ev::Click, Msg::SubmitGuess),
+					"Submit your guess",
+					class! {"button", "inverse"}
+				],
 			]
 		} else {
-			button![simple_ev(Ev::Click, Msg::StartNewGame), "Start new game"]
-		}
+			vec![button![
+				simple_ev(Ev::Click, Msg::StartNewGame),
+				"Start new game"
+			]]
+		},
+		ralph()
 	]
 }
 
