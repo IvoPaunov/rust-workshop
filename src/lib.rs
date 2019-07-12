@@ -7,25 +7,21 @@ use std::cmp::Ordering;
 
 // Model
 
-const MAX_ATTEMPTS: u32 = 3;
+const MAX_ATTEMPTS: u32 = 8;
 
+#[derive(Default)]
 struct Model {
 	secret_number: u32,
 	pub attempts: u32,
 	pub guess: String,
-	pub game_active: bool,
+	pub game_finished: bool,
 	pub msg: String,
 }
 
-impl Default for Model {
-	fn default() -> Self {
-		Self {
-			secret_number: (random() * 100.0) as u32,
-			attempts: 0,
-			msg: String::new(),
-			guess: String::new(),
-			game_active: true,
-		}
+impl Model {
+	fn randomize(mut self) -> Self {
+		self.secret_number = (random() * 100.0) as u32;
+		self
 	}
 }
 
@@ -34,8 +30,8 @@ impl Default for Model {
 #[derive(Clone)]
 enum Msg {
 	ChangeGuess(String),
-	SubmitGuess
-
+	SubmitGuess,
+	StartNewGame,
 }
 
 fn update(msg: Msg, model: &mut Model, _: &mut Orders<Msg>) {
@@ -51,12 +47,22 @@ fn update(msg: Msg, model: &mut Model, _: &mut Orders<Msg>) {
 			model.msg = match parsed.cmp(&model.secret_number) {
 				Ordering::Less => "Too small!".to_string(),
 				Ordering::Greater => "Too big!".to_string(),
-				Ordering::Equal => "You win!".to_string(),				
+				Ordering::Equal => {
+					model.game_finished = true;
+					"Sir, you have won!".to_string()
+				}
 			};
-		},
+			model.attempts += 1;
+
+			if model.attempts == MAX_ATTEMPTS {
+				model.game_finished = true;
+				model.msg = "Sir, you loose!".to_string()
+			}
+		}
 		Msg::ChangeGuess(guess) => {
 			model.guess = guess;
 		}
+		Msg::StartNewGame => *model = Model::default().randomize(),
 	}
 }
 
@@ -66,20 +72,24 @@ fn view(model: &Model) -> El<Msg> {
 	div![
 		div![format!("Your guess: {}", model.guess)],
 		div![format!("Info: {}", model.msg)],
-		input![
-			attrs! {At::Value => model.guess},
-			input_ev(Ev::Input, Msg::ChangeGuess)
-		],
-		button![
-			simple_ev(Ev::Click, Msg::SubmitGuess),
-			"Submit your guess"
-		]
+		div![format!("Attempts left: {}", MAX_ATTEMPTS - model.attempts)],
+		if !model.game_finished {
+			div![
+				input![
+					attrs! {At::Value => model.guess},
+					input_ev(Ev::Input, Msg::ChangeGuess)
+				],
+				button![simple_ev(Ev::Click, Msg::SubmitGuess), "Submit your guess"]
+			]
+		} else {
+			button![simple_ev(Ev::Click, Msg::StartNewGame), "Start new game"]
+		}
 	]
 }
 
 #[wasm_bindgen]
 pub fn render() {
-	seed::App::build(Model::default(), update, view)
+	seed::App::build(Model::default().randomize(), update, view)
 		.finish()
 		.run();
 }
