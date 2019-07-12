@@ -1,2 +1,6 @@
-target
-.vscode
+/target
+**/*.rs.bk
+/.vscode
+
+/pkg
+wasm-pack.log
